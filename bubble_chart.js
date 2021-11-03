@@ -50,6 +50,9 @@ const visObject = {
         },
         {
           'White to Green': '#ffffe5,#f7fcb9 ,#d9f0a3,#addd8e,#78c679,#41ab5d,#238443,#006837,#004529'
+        },
+        {
+          'Lots of Love': '#549171, #AEA2B7, #E1AFAE, #D4AB8A, #55928A, #D87950, #E9565A, #914D33, #757981, #BF7939, #515662, #EAAC9D'
         }
       ],
       default: 'c',
@@ -93,11 +96,11 @@ const visObject = {
   	`
 
     // Create a container element to let us center the text.
-    var container = element.appendChild(document.createElement("div"))
-    container.className = container.id = "bubble-vis"
+    this._container = element.appendChild(document.createElement("div"))
+    this._container.className = this._container.id = "bubble-vis"
 
     // Create an element to contain the text.
-    this._textElement = container.appendChild(document.createElement("div"))
+    this._textElement = this._container.appendChild(document.createElement("div"))
     this._textElement.className = this._textElement.id = "bubble-text"
   },
 
@@ -106,7 +109,7 @@ const visObject = {
    * the data and should update the visualization with the new data.
    **/
   updateAsync: function(data, element, config, queryResponse, details, doneRendering) {
-
+    this._container.innerHTML = ""
     // Clear any errors from previous updates.
     this.clearErrors()
 
@@ -126,7 +129,8 @@ const visObject = {
         left: 60
       },
       width = element.offsetWidth - margin.left - margin.right,
-      height = element.offsetHeight - margin.top - margin.bottom
+      height = element.offsetHeight - margin.top - margin.bottom,
+      x_width = width - 40;
 
 
     // append the svg object to the body of the page
@@ -144,11 +148,11 @@ const visObject = {
 
     // Add X axis
     var xmax = data.reduce(function(acc, cur) {
-      return Math.max(cur[queryResponse.fields.measures[0].name], acc)
+      return Math.max(cur[queryResponse.fields.measures[0].name].value, acc)
     }, 0)
     var x = d3.scaleLinear()
       .domain([0, xmax * 1.1])
-      .range([0, width])
+      .range([0, x_width])
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x).ticks(3))
@@ -156,13 +160,13 @@ const visObject = {
     // Add X axis label:
     svg.append("text")
       .attr("text-anchor", "middle")
-      .attr("x", width / 2)
+      .attr("x", x_width / 2)
       .attr("y", height + 50)
       .text(queryResponse.fields.measures[0].label)
 
     // Add Y axis
     var ymax = data.reduce(function(acc, cur) {
-      return Math.max(cur[queryResponse.fields.measures[1].name], acc)
+      return Math.max(cur[queryResponse.fields.measures[1].name].value, acc)
     }, 0)
     var y = d3.scaleLinear()
       .domain([0, ymax * 1.1])
@@ -179,25 +183,25 @@ const visObject = {
       .text(queryResponse.fields.measures[1].label)
 
     // Add a scale for bubble size
-    var bmin = data.reduce(function(acc, cur) {
-      return Math.min(cur[queryResponse.fields.measures[2].name], acc)
-    }, 0)
     var bmax = data.reduce(function(acc, cur) {
-      return Math.max(cur[queryResponse.fields.measures[2].name], acc)
+      return Math.max(cur[queryResponse.fields.measures[2].name].value, acc)
     }, 0)
+    var bmin = data.reduce(function(acc, cur) {
+      return Math.min(cur[queryResponse.fields.measures[2].name].value, acc)
+    }, bmax)
     var z = d3.scaleSqrt()
       .domain([bmin, bmax])
       .range([2, 30])
 
     // Add a scale for bubble color
     var categories = data.map(function(cur) {
-      return cur[queryResponse.fields.dimensions[0].name]
+      return cur[queryResponse.fields.dimensions[0].name].value
     })
 
     var colorSettings = d3.schemeSet1
-    if (config.colorPreSet === 'c') {
+    if (config.colorPreSet === 'c' && config.colorRange) {
       var colorSettings = config.colorRange
-    } else if (typeof config.colorPreSet === 'string') {
+    } else if (typeof config.colorPreSet === 'string' && config.colorPreSet !== 'c') {
       var colorSettings = config.colorPreSet.split(",")
     }
 
@@ -227,7 +231,7 @@ const visObject = {
         .duration(200)
       tooltip
         .style("opacity", 1)
-        .html(d[queryResponse.fields.dimensions[0].name])
+        .html(d[queryResponse.fields.dimensions[0].name].value)
         .style("left", (d3.mouse(this)[0] + 45) + "px")
         .style("top", (d3.mouse(this)[1] + 45) + "px")
     }
@@ -273,32 +277,51 @@ const visObject = {
       .enter()
       .append("circle")
       .attr("class", function(d) {
-        return "bubbles " + d[queryResponse.fields.dimensions[0].name]
+        return "bubbles " + d[queryResponse.fields.dimensions[0].name].value
       })
       .attr("cx", function(d) {
-        return x(d[queryResponse.fields.measures[0].name])
+        return x(d[queryResponse.fields.measures[0].name].value)
       })
       .attr("cy", function(d) {
-        return y(d[queryResponse.fields.measures[1].name])
+        return y(d[queryResponse.fields.measures[1].name].value)
       })
       .attr("r", function(d) {
-        return z(d[queryResponse.fields.measures[2].name])
+        return z(d[queryResponse.fields.measures[2].name].value)
       })
       .style("fill", function(d) {
-        return myColor(d[queryResponse.fields.dimensions[0].name])
+        return myColor(d[queryResponse.fields.dimensions[0].name].value)
       })
       .style("stroke", function(d) {
-        return myColor(d[queryResponse.fields.dimensions[0].name])
+        return myColor(d[queryResponse.fields.dimensions[0].name].value)
       })
       // -3- Trigger the functions for hover
       .on("mouseover", showTooltip)
       .on("mousemove", moveTooltip)
       .on("mouseleave", hideTooltip)
 
+    // ---------------------------//
+    //        UTILS               //
+    // ---------------------------//
 
+    function nFormatter(num, digits) {
+      const lookup = [
+        { value: 1, symbol: "" },
+        { value: 1e3, symbol: "k" },
+        { value: 1e6, symbol: "M" },
+        { value: 1e9, symbol: "G" },
+        { value: 1e12, symbol: "T" },
+        { value: 1e15, symbol: "P" },
+        { value: 1e18, symbol: "E" }
+      ];
+      const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+      var item = lookup.slice().reverse().find(function(item) {
+        return num >= item.value;
+      });
+      return item ? (num / item.value).toFixed(digits).replace(rx, "$1") + ' ' + item.symbol : "0";
+    }
 
     // ---------------------------//
-    //       LEGEND              //
+    //        LEGEND              //
     // ---------------------------//
 
     // Add legend: circles
@@ -312,7 +335,7 @@ const visObject = {
       .append("circle")
       .attr("cx", xLegend)
       .attr("cy", function(d) {
-        return height - 100 - z(d)
+        return height - 50 - z(d)
       })
       .attr("r", function(d) {
         return z(d)
@@ -331,10 +354,10 @@ const visObject = {
       })
       .attr('x2', xLabel)
       .attr('y1', function(d) {
-        return height - 100 - z(d)
+        return height - 50 - z(d)
       })
       .attr('y2', function(d) {
-        return height - 100 - z(d)
+        return height - 50 - z(d)
       })
       .attr('stroke', 'black')
       .style('stroke-dasharray', ('2,2'))
@@ -347,10 +370,10 @@ const visObject = {
       .append("text")
       .attr('x', xLabel)
       .attr('y', function(d) {
-        return height - 100 - z(d)
+        return height - 50 - z(d)
       })
       .text(function(d) {
-        return d
+        return nFormatter(d, 0)
       })
       .style("font-size", 10)
       .attr('alignment-baseline', 'middle')
@@ -358,7 +381,7 @@ const visObject = {
     // Legend title
     svg.append("text")
       .attr('x', xLegend)
-      .attr("y", height - 100 + 30)
+      .attr("y", height - 20)
       .text(queryResponse.fields.measures[2].label_short)
       .attr("text-anchor", "middle")
 
@@ -371,7 +394,7 @@ const visObject = {
       .append("circle")
       .attr("cx", xLegend - z(bmax))
       .attr("cy", function(d, i) {
-        return 100 + i * (size + 5)
+        return 50 + i * (size + 5)
       }) // 100 is where the first dot appears. 25 is the distance between dots
       .attr("r", 7)
       .style("fill", function(d) {
@@ -387,7 +410,7 @@ const visObject = {
       .append("text")
       .attr("x", xLegend - z(bmax) + size * .8)
       .attr("y", function(d, i) {
-        return 90 + i * (size + 5) + (size / 2)
+        return 40 + i * (size + 5) + (size / 2)
       }) // 100 is where the first dot appears. 25 is the distance between dots
       .text(function(d) {
         return d
