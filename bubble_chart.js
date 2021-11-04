@@ -183,7 +183,7 @@ const visObject = {
         d3.axisLeft(y)
           .tickSize(0)
           .tickFormat("")
-          .tickSizeInner(-width)
+          .tickSizeInner(-x_width)
       )
     svg.append("g").call(d3.axisLeft(y).tickSize(0))
 
