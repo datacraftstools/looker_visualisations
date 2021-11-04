@@ -75,23 +75,29 @@ const visObject = {
     element.innerHTML = `
     <style>
       .bubble-vis {
-        height: 100%
-        display: flex
-        flex-direction: column
-        justify-content: center
-        text-align: center
+        font-family: Roboto, "Noto Sans", "Noto Sans JP", "Noto Sans CJK KR", "Noto Sans Arabic UI", "Noto Sans Devanagari UI", "Noto Sans Hebrew", "Noto Sans Thai UI", Helvetica, Arial, sans-serif;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
       }
       .bubbles {
-        stroke-width: 1px
-        stroke: black
-        opacity: .8
+        stroke-width: 1px;
+        stroke: black;
+        opacity: .8;
       }
       .bubbles:hover {
-        stroke: black
+        stroke: black;
     	}
       .tooltip {
-        position: absolute
+        position: absolute;
       }
+      .grid line {
+        stroke: lightgrey;
+        stroke-opacity: 0.7;
+        shape-rendering: crispEdges;
+      }      
     </style>
   	`
 
@@ -155,7 +161,7 @@ const visObject = {
       .range([0, x_width])
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).ticks(3))
+      .call(d3.axisBottom(x).tickSize(0))
 
     // Add X axis label:
     svg.append("text")
@@ -164,7 +170,7 @@ const visObject = {
       .attr("y", height + 50)
       .text(queryResponse.fields.measure_like[0].label)
 
-    // Add Y axis
+    // Add Y axis and gridlines
     var ymax = data.reduce(function(acc, cur) {
       return Math.max(cur[queryResponse.fields.measure_like[1].name].value, acc)
     }, 0)
@@ -172,7 +178,14 @@ const visObject = {
       .domain([0, ymax * 1.1])
       .range([height, 0])
     svg.append("g")
-      .call(d3.axisLeft(y))
+      .attr("class", "grid")
+      .call(
+        d3.axisLeft(y)
+          .tickSize(0)
+          .tickFormat("")
+          .tickSizeInner(-width)
+      )
+    svg.append("g").call(d3.axisLeft(y).tickSize(0))
 
     // Add Y axis label:
     svg.append("text")
@@ -383,6 +396,7 @@ const visObject = {
       .attr('x', xLegend)
       .attr("y", height - 20)
       .text(queryResponse.fields.measure_like[2].label_short || queryResponse.fields.measure_like[2].label)
+      .style("font-size", 14)
       .attr("text-anchor", "middle")
 
     // Add one dot in the legend for each name.
@@ -395,7 +409,7 @@ const visObject = {
       .attr("cx", xLegend - z(bmax))
       .attr("cy", function(d, i) {
         return 50 + i * (size + 5)
-      }) // 100 is where the first dot appears. 25 is the distance between dots
+      })
       .attr("r", 7)
       .style("fill", function(d) {
         return myColor(d)
@@ -411,12 +425,13 @@ const visObject = {
       .attr("x", xLegend - z(bmax) + size * .8)
       .attr("y", function(d, i) {
         return 40 + i * (size + 5) + (size / 2)
-      }) // 100 is where the first dot appears. 25 is the distance between dots
+      })
       .text(function(d) {
         return d
       })
       .attr("text-anchor", "left")
       .style("alignment-baseline", "middle")
+      .style("font-size", 14)
       .on("mouseover", highlight)
       .on("mouseleave", noHighlight)
 
