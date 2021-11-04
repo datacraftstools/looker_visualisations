@@ -148,7 +148,7 @@ const visObject = {
 
     // Add X axis
     var xmax = data.reduce(function(acc, cur) {
-      return Math.max(cur[queryResponse.fields.measures[0].name].value, acc)
+      return Math.max(cur[queryResponse.fields.measure_like[0].name].value, acc)
     }, 0)
     var x = d3.scaleLinear()
       .domain([0, xmax * 1.1])
@@ -162,11 +162,11 @@ const visObject = {
       .attr("text-anchor", "middle")
       .attr("x", x_width / 2)
       .attr("y", height + 50)
-      .text(queryResponse.fields.measures[0].label)
+      .text(queryResponse.fields.measure_like[0].label)
 
     // Add Y axis
     var ymax = data.reduce(function(acc, cur) {
-      return Math.max(cur[queryResponse.fields.measures[1].name].value, acc)
+      return Math.max(cur[queryResponse.fields.measure_like[1].name].value, acc)
     }, 0)
     var y = d3.scaleLinear()
       .domain([0, ymax * 1.1])
@@ -180,14 +180,14 @@ const visObject = {
       .attr("x", -height / 2)
       .attr("y", -40)
       .attr("transform", "rotate(-90)")
-      .text(queryResponse.fields.measures[1].label)
+      .text(queryResponse.fields.measure_like[1].label)
 
     // Add a scale for bubble size
     var bmax = data.reduce(function(acc, cur) {
-      return Math.max(cur[queryResponse.fields.measures[2].name].value, acc)
+      return Math.max(cur[queryResponse.fields.measure_like[2].name].value, acc)
     }, 0)
     var bmin = data.reduce(function(acc, cur) {
-      return Math.min(cur[queryResponse.fields.measures[2].name].value, acc)
+      return Math.min(cur[queryResponse.fields.measure_like[2].name].value, acc)
     }, bmax)
     var z = d3.scaleSqrt()
       .domain([bmin, bmax])
@@ -280,13 +280,13 @@ const visObject = {
         return "bubbles " + d[queryResponse.fields.dimensions[0].name].value
       })
       .attr("cx", function(d) {
-        return x(d[queryResponse.fields.measures[0].name].value)
+        return x(d[queryResponse.fields.measure_like[0].name].value)
       })
       .attr("cy", function(d) {
-        return y(d[queryResponse.fields.measures[1].name].value)
+        return y(d[queryResponse.fields.measure_like[1].name].value)
       })
       .attr("r", function(d) {
-        return z(d[queryResponse.fields.measures[2].name].value)
+        return z(d[queryResponse.fields.measure_like[2].name].value)
       })
       .style("fill", function(d) {
         return myColor(d[queryResponse.fields.dimensions[0].name].value)
@@ -382,7 +382,7 @@ const visObject = {
     svg.append("text")
       .attr('x', xLegend)
       .attr("y", height - 20)
-      .text(queryResponse.fields.measures[2].label_short)
+      .text(queryResponse.fields.measure_like[2].label_short || queryResponse.fields.measure_like[2].label)
       .attr("text-anchor", "middle")
 
     // Add one dot in the legend for each name.
