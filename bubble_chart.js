@@ -270,7 +270,7 @@ const visObject = {
       // reduce opacity of all groups
       d3.selectAll(".bubbles").style("opacity", .05)
       // expect the one that is hovered
-      d3.selectAll("." + d).style("opacity", 1)
+      d3.selectAll("." + d.replace(/\s/g, '_').toLowerCase()).style("opacity", 1)
     }
 
     // And when it is not hovered anymore
@@ -290,7 +290,7 @@ const visObject = {
       .enter()
       .append("circle")
       .attr("class", function(d) {
-        return "bubbles " + d[queryResponse.fields.dimensions[0].name].value
+        return "bubbles " + d[queryResponse.fields.dimensions[0].name].values.replace(/\s/g, '_').toLowerCase()
       })
       .attr("cx", function(d) {
         return x(d[queryResponse.fields.measure_like[0].name].value)
@@ -410,7 +410,7 @@ const visObject = {
       .attr("cy", function(d, i) {
         return 50 + i * (size + 5)
       })
-      .attr("r", 7)
+      .attr("r", 6)
       .style("fill", function(d) {
         return myColor(d)
       })
@@ -422,7 +422,7 @@ const visObject = {
       .data(allgroups)
       .enter()
       .append("text")
-      .attr("x", xLegend - z(bmax) + size * .8)
+      .attr("x", xLegend - z(bmax) + size * .7)
       .attr("y", function(d, i) {
         return 40 + i * (size + 5) + (size / 2)
       })
@@ -431,7 +431,7 @@ const visObject = {
       })
       .attr("text-anchor", "left")
       .style("alignment-baseline", "middle")
-      .style("font-size", 14)
+      .style("font-size", 12)
       .on("mouseover", highlight)
       .on("mouseleave", noHighlight)
 
