@@ -290,7 +290,7 @@ const visObject = {
       .enter()
       .append("circle")
       .attr("class", function(d) {
-        return "bubbles " + d[queryResponse.fields.dimensions[0].name].values.replace(/\s/g, '_').toLowerCase()
+        return "bubbles " + d[queryResponse.fields.dimensions[0].name].value.replace(/\s/g, '_').toLowerCase()
       })
       .attr("cx", function(d) {
         return x(d[queryResponse.fields.measure_like[0].name].value)
