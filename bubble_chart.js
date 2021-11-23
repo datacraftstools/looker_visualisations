@@ -1,5 +1,5 @@
 /**
- * Welcome to the Looker Visualization Builder! Please refer to the following resources 
+ * Welcome to the Looker Visualization Builder! Please refer to the following resources
  * to help you write your visualization:
  *  - API Documentation - https://github.com/looker/custom_visualizations_v2/blob/master/docs/api_reference.md
  *  - Example Visualizations - https://github.com/looker/custom_visualizations_v2/tree/master/src/examples
@@ -97,7 +97,7 @@ const visObject = {
         stroke: lightgrey;
         stroke-opacity: 0.7;
         shape-rendering: crispEdges;
-      }      
+      }
     </style>
   	`
 
@@ -290,7 +290,7 @@ const visObject = {
       .enter()
       .append("circle")
       .attr("class", function(d) {
-        return "bubbles " + d[queryResponse.fields.dimensions[0].name].values.replace(/\s/g, '_').toLowerCase()
+        return "bubbles " + d[queryResponse.fields.dimensions[0].name].value.replace(/\s/g, '_').toLowerCase()
       })
       .attr("cx", function(d) {
         return x(d[queryResponse.fields.measure_like[0].name].value)
